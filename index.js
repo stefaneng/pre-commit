@@ -302,7 +302,7 @@ Hook.prototype.run = function runner() {
     if (errObj) errObjs.push(errObj);
 
     // cleanup; unstash changes before exiting.
-    if (hooked.config.stash === false || ! hooked.merging) {
+    if (hooked.config.stash === false || hooked.merging) {
       done(errObjs);
     } else {
       hooked._unstash(function(code) {
@@ -332,7 +332,7 @@ Hook.prototype.run = function runner() {
     async.eachSeries(scripts, hooked._runScript.bind(hooked), cleanup);
   }
 
-  if (this.config.stash === false || ! hooked.merging) {
+  if (this.config.stash === false || hooked.merging) {
     runScripts();
   } else {
     // attempt to stash changes not on stage
