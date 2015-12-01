@@ -182,7 +182,12 @@ Hook.prototype.initialize = function initialize() {
   this.root = this.root.stdout.toString().trim();
 
   // Check if we are merging
-  this.merging = Boolean(fs.statSync('.git/MERGE_HEAD'));
+  try {
+    fs.accessSync('.git/MERGE_HEAD');
+    this.merging = true;
+  } catch (e) {
+    this.merging = false;
+  }
 
   try {
     this.json = require(path.join(this.root, 'package.json'));
