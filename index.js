@@ -5,7 +5,8 @@ var spawn = require('cross-spawn')
   , path = require('path')
   , util = require('util')
   , tty = require('tty')
-  , async = require('async');
+  , async = require('async')
+  , fs = require('fs');
 
 /**
  * Representation of a hook runner.
@@ -180,6 +181,9 @@ Hook.prototype.initialize = function initialize() {
   this.status = this.status.stdout.toString().trim();
   this.root = this.root.stdout.toString().trim();
 
+  // Check if we are merging
+  this.merging = Boolean(fs.statSync('.git/MERGE_HEAD'));
+
   try {
     this.json = require(path.join(this.root, 'package.json'));
     this.parse();
@@ -293,7 +297,7 @@ Hook.prototype.run = function runner() {
     if (errObj) errObjs.push(errObj);
 
     // cleanup; unstash changes before exiting.
-    if (hooked.config.stash === false) {
+    if (hooked.config.stash === false && ! this.merging) {
       done(errObjs);
     } else {
       hooked._unstash(function(code) {
@@ -323,7 +327,7 @@ Hook.prototype.run = function runner() {
     async.eachSeries(scripts, hooked._runScript.bind(hooked), cleanup);
   }
 
-  if (this.config.stash === false) {
+  if (this.config.stash === false && ! this.merging) {
     runScripts();
   } else {
     // attempt to stash changes not on stage
